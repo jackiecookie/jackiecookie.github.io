@@ -139,3 +139,24 @@ function stringify(value: mixed) {
 }
 ```
 如果你确实不想限制类型也不想flow干预你返回的值那么你可以使用`any`关键字，但是他是非安全的，应该尽可能的不要使用他。
+
+你也可以根据你的需要约束变量或者对象属性的类型：
+```
+// @flow
+var obj: {
+  foo: ?number
+}={
+  foo: 1   //成功
+}
+
+obj= {
+  foo: undefined  //成功
+}
+
+obj= {
+  foo: null    //成功
+}
+
+var foo: number= obj.foo  //错误
+```
+?number表示foo的值可以是number,null或者是undefined,但是foo变量的值必须是一个number,flow会替你检查obj.foo类型的所有可能性，所以flow将会在这里抛出一个错误。
