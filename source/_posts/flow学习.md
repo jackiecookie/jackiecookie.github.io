@@ -61,7 +61,7 @@ function method(x: Number, y: String, z: Boolean) {
     // ...
 }
 
-method(new Number(42), new String("world"), new Boolean(false)); //成功
+method(new Number(42), new String("world"), new Boolean(false)); //没毛病
 method(42, "world", false); //失败
 ```
 **注意:** 这里的Boolean和boolean,String和string,Number和number之间都是不同的对象，关于上面的代码Flow在进行检查后会抛出下面的错误：
@@ -99,7 +99,7 @@ flow支持检查的类型很多，可以是原始类型：
 function acceptsTwo(value: 2) {
   // ...
 }
-acceptsTwo(2);   // 成功!
+acceptsTwo(2);   // 没毛病!
 acceptsTwo(3);   // 错误!
 ```
 或者是这样
@@ -113,8 +113,8 @@ function getColor(name: "success" | "warning" | "danger") {
   }
 }
 
-getColor("success"); // 成功!
-getColor("danger");  // 成功!
+getColor("success"); // 没毛病!
+getColor("danger");  // 没毛病!
 getColor("error");   // 错误!
 ```
 还可以是像高级语言里面的泛型：
@@ -139,3 +139,17 @@ function stringify(value: mixed) {
 }
 ```
 如果你确实不想限制类型也不想flow干预你返回的值那么你可以使用`any`关键字，但是他是非安全的，应该尽可能的不要使用他。
+
+另外还有一些比较接近高级语言的用法:
+```
+// @flow
+type FuncType = (input: string) => void;
+function func(input: string) { /* ... */ }
+let test: FuncType = func; // 没毛病!
+```
+上面的代码规定了一个类型名称为FuncType，他规定了一个方法类型，参数必须是一个字符串类型，返回值为void。而方法func也恰好有一个字符串的参数且返回值是void。所以将规定类型为方法类型FuncType的变量test赋值为func是没问题的。而编译好的代码是这样的：
+```
+function func(input) {};
+let test = func;
+```
+所以flow只会在开发阶段做类型检测，避免后续协同开发可能出现的bug。也让代码更可读。当然flow还有很多更复杂的使用，比如如何配置，第三库的类型定义，更复杂和高级的类型等等。后续在补上。
