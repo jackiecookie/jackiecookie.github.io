@@ -59,3 +59,61 @@ var app = new Vue({
     banner
   }
 ```
+同时附上resolve方法
+``` JavaScript
+const aliases = require('./alias')
+const resolve = p => {
+  const base = p.split('/')[0]
+  if (aliases[base]) {
+    return path.resolve(aliases[base], p.slice(base.length + 1))
+  } else {
+    return path.resolve(__dirname, '../', p)
+  }
+}
+/*----------------------------------alias.js--------------------------------------------*/
+module.exports = {
+  vue: path.resolve(__dirname, '../src/platforms/web/entry-runtime-with-compiler'),
+  compiler: path.resolve(__dirname, '../src/compiler'),
+  core: path.resolve(__dirname, '../src/core'),
+  shared: path.resolve(__dirname, '../src/shared'),
+  web: path.resolve(__dirname, '../src/platforms/web'),
+  weex: path.resolve(__dirname, '../src/platforms/weex'),
+  server: path.resolve(__dirname, '../src/server'),
+  entries: path.resolve(__dirname, '../src/entries'),
+  sfc: path.resolve(__dirname, '../src/sfc')
+}
+```
+然后我们就可以解释一下build web-full-dev到底做了什么了,他是像'/src/platforms/web/entry-runtime-with-compiler.js'按照umd(通用模式)构建到'/dist/vue.js'下面。那我们就可以找到'entry-runtime-with-compiler.js'文件,尝试找到构建方法了。
+``` JavaScript
+/* ... */
+import Vue from './runtime/index'
+/* ... */
+/*----------------------------------./runtime/index.js--------------------------------------------*/
+/* ... */
+import Vue from 'core/index'
+/* ... */
+```
+先关注到文件中的这两个引入,剩下的代码我们后面在讲。这里就是Vue构建方法的入口了。让我们看看这个方法里面做了什么事情。
+``` JavaScript
+import Vue from './instance/index'
+import { initGlobalAPI } from './global-api/index'
+import { isServerRendering } from 'core/util/env'
+
+/* initGlobalAPI给Vue绑定全局方法。 */
+initGlobalAPI(Vue)
+
+Object.defineProperty(Vue.prototype, '$isServer', {
+  get: isServerRendering
+})
+
+Object.defineProperty(Vue.prototype, '$ssrContext', {
+  get () {
+    /* istanbul ignore next */
+    return this.$vnode && this.$vnode.ssrContext
+  }
+})
+
+Vue.version = '__VERSION__'
+
+export default Vue
+```
