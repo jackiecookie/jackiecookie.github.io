@@ -117,3 +117,102 @@ Vue.version = '__VERSION__'
 
 export default Vue
 ```
+而instance/index文件是这样的:
+``` JavaScript
+import { initMixin } from './init'
+import { stateMixin } from './state'
+import { renderMixin } from './render'
+import { eventsMixin } from './events'
+import { lifecycleMixin } from './lifecycle'
+import { warn } from '../util/index'
+
+function Vue (options) {
+  if (process.env.NODE_ENV !== 'production' &&
+    !(this instanceof Vue)
+  ) {
+    warn('Vue is a constructor and should be called with the `new` keyword')
+  }
+  this._init(options)
+}
+
+initMixin(Vue)
+stateMixin(Vue)
+eventsMixin(Vue)
+lifecycleMixin(Vue)
+renderMixin(Vue)
+
+export default Vue
+
+```
+这两个文件就是初始化了Vue,而new Vue到时候会初始化这个实例。
+``` JavaScript
+/*------------------prototype-----------------*/
+Vue.prototype.__patch__ = inBrowser ? patch : noop
+Vue.prototype._init = function (options?: Object) {}
+Object.defineProperty(Vue.prototype, '$data', dataDef)
+Object.defineProperty(Vue.prototype, '$props', propsDef)
+Vue.prototype.$set = set
+Vue.prototype.$delete = del
+Vue.prototype.$watch = function (expOrFn: string | Function,cb: any,options?: Object): Function{}
+Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {}
+Vue.prototype.$once = function (event: string, fn: Function): Component {}
+Vue.prototype.$off = function (event?: string | Array<string>, fn?: Function): Component {}
+Vue.prototype.$emit = function (event: string): Component {}
+Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {}
+Vue.prototype.$forceUpdate = function () {}
+Vue.prototype.$destroy = function () {}
+Vue.prototype.$nextTick = function (fn: Function) {}
+Vue.prototype._render = function (): VNode {}
+Vue.prototype._o = function(tree: VNode | Array<VNode>,index: number,key: string){}
+Vue.prototype._n = toNumber
+Vue.prototype._s = toString
+Vue.prototype._l = function renderList (val: any,render:(val: any,keyOrIndex:string|number,index?: number) => VNode): ?Array<VNode> {}
+Vue.prototype._t = function renderSlot (name: string,fallback: ?Array<VNode>,props: ?Object,bindObject: ?Object): ?Array<VNode> {}
+Vue.prototype._q = looseEqual
+Vue.prototype._i = looseIndexOf
+Vue.prototype._m = function renderStatic (index: number,isInFor?: boolean): VNode | Array<VNode> {}
+Vue.prototype._f = function resolveFilter (id: string): Function {}
+Vue.prototype._k = function checkKeyCodes (eventKeyCode: number,key: string,builtInAlias: number | Array<number> | void): boolean {}
+Vue.prototype._b = function bindObjectProps (data: any,tag: string,value: any,asProp: boolean,isSync?: boolean): VNodeData {}
+Vue.prototype._v = function createTextVNode (val: string | number) {}
+Vue.prototype._e = function createEmptyVNode = (text: string = '') {}
+Vue.prototype._u = function resolveScopedSlots (fns: ScopedSlotsData,res?: Object): { [key: string]: Function } {}
+Vue.prototype._g = function bindObjectListeners (data: any, value: any): VNodeData {}
+Vue.prototype.$mount = function (el?: string | Element,hydrating?: boolean): Component
+/*------------------init-----------------*/
+vm._uid = uid++
+vm._isVue = true
+vm.$options = mergeOptions(
+    resolveConstructorOptions(vm.constructor),
+    options || {},
+    vm
+)
+vm._self = vm
+/*------------------initLifecycle-----------------*/
+vm.$parent = parent
+vm.$root = parent ? parent.$root : vm
+
+vm.$children = []
+vm.$refs = {}
+
+vm._watcher = null
+vm._inactive = null
+vm._directInactive = false
+vm._isMounted = false
+vm._isDestroyed = false
+vm._isBeingDestroyed = false
+/*------------------event-----------------*/
+vm._events = Object.create(null)
+vm._hasHookEvent = false
+/*------------------render-----------------*/
+vm._vnode = null
+vm._staticTrees = null
+vm.$slots = resolveSlots(vm.$options._renderChildren, renderContext)
+vm.$scopedSlots = emptyObject
+vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
+vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
+defineReactive(vm, '$attrs', parentData && parentData.attrs, null, true)
+defineReactive(vm, '$listeners', parentData && parentData.on, null, true)
+/*------------------render-----------------*/
+```
+这就是Vue实例上面的属性和方法。
