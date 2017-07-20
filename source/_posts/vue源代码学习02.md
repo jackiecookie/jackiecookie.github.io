@@ -1,10 +1,9 @@
 ---
-layout: '[layout]'
-title: vue源代码学习2 -- $mount挂载方法
-date: 2017-07-14 13:39:07
+layout: post
+title: vue源代码学习02
+date: 2017-07-20 17:27:36
 tags:
 ---
-
 ### Vue.prototype.$mount
 $mount在Vue中是一个挂载方法,如果在实例化Vue到时候传入el参数就会自动将生成到实例挂载到对应到el上面,但是如果没有传入el参数就需要手动调用这个方法来挂载对象。
 我打算从这个方法入手来看看挂载方法做了什么,首先挂载方法由两个部分组成,直接上代码。
@@ -82,8 +81,8 @@ Vue.prototype.$mount = function (
 ```
 我们先看到`const { render, staticRenderFns } = compileToFunctions(template, {})`这行代码.他主要干了三件事情。
 1. parser:解析template模板,获得AST树。
-2. optimizer:
-3. codegen/code generate
+2. optimizer:标记静态节点。
+3. codegen/code generate:生成渲染方法代码。
 我们就这三个部分稍微展开来看一下。先来看看AST树，在vuejs中AST树由ASTNode组成，而ASTNode有三种类型ASTElement，ASTText和ASTExpression,下面是ASTElement的一些和解析有关到属性:
 ``` JavaScript
 declare type ASTElement = {
@@ -158,6 +157,13 @@ declare type ASTText = {
     !isBuiltInTag(node.tag) && // 不是内置到tag
     isPlatformReservedTag(node.tag) && // 非组件
     !isDirectChildOfTemplateFor(node) &&
-    Object.keys(node).every(isStaticKey)
+    Object.keys(node).every(isStaticKey)  //是否是静态key
   ))
 ``` 
+标记静态节点到好处是可以在修补节点到时候跳过这些节点，另外在重新渲染到时候也不会去渲染他们。接下来就是传入之前生成的AST树生成编译完成的代码了。
+他们会根据AST树到各个指令属性生成对应到方法,比如是否有for循环指令放入到对应到for循环方法中去让他可以在后续执行。他会两个方法一个是render方法另一个是staticRenderFns分别存放渲染方法和静态节点到渲染方法。
+现在可以回过头来runtime/index.js里的$mount方法了,而他直接调用了`mountComponent(this, el, hydrating)`而在这个方法中做了这几件事情:
+1. 调用之前生成到render方法获得VNode.
+2. 利用生成的VNode更新需要装载到的节点，获得新的vm.$el。
+当然这里面有很多复杂的判断,其中到一些重点到细节比如Vuejs的VDom模块，Watcher模块等等我会在后面深究。这里就借用官方的Vue生命周期图示在结束这一章的介绍，就当是抛砖引玉了。
+[Vue生命周期]: https://cn.vuejs.org/images/lifecycle.png  "Vue生命周期"
