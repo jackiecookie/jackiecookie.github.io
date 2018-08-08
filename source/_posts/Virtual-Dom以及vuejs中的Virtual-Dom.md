@@ -228,6 +228,72 @@ Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
 2. 如果有老元素,老元素是否为原始Element，是原始Element考虑是否是服务器渲染([SSR](https://ssr.vuejs.org/))的，服务器渲染则混合(hydrate)。
 3. 如果有老元素,老元素不是原始Element，比较老元素和新元素并且更新元素。
 
-服务器渲染混合的情况我们先放一边，直接来看patchVNode方法
-![avatar](http://image.jiantuku.com/17-7-26/82308669.jpg?attname=file_1501061830126_61f0.png&e=1501070410&token=el7kgPgYzpJoB23jrChWJ2gV3HpRl0VCzFn8rKKv:ORMmnZP-YN6RW5i1G7xQe68xZBg=)
+服务器渲染混合的情况我们先放一边，直接来看patchVNode方法:
+``` JavaScript
+function patchVnode (oldVnode, vnode, insertedVnodeQueue, removeOnly) {
+    if (oldVnode === vnode) {
+      return
+    }
 
+    const elm = vnode.elm = oldVnode.elm
+    if (isTrue(oldVnode.isAsyncPlaceholder)) {
+      if (isDef(vnode.asyncFactory.resolved)) {
+        hydrate(oldVnode.elm, vnode, insertedVnodeQueue)
+      } else {
+        vnode.isAsyncPlaceholder = true
+      }
+      return
+    }
+
+    //当节点为clone的静态节点时会被重复使用。
+    if (isTrue(vnode.isStatic) &&
+      isTrue(oldVnode.isStatic) &&
+      vnode.key === oldVnode.key &&
+      (isTrue(vnode.isCloned) || isTrue(vnode.isOnce))
+    ) {
+      vnode.componentInstance = oldVnode.componentInstance
+      return
+    }
+
+    let i
+    const data = vnode.data
+    if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
+      i(oldVnode, vnode)
+    }
+
+    const oldCh = oldVnode.children
+    const ch = vnode.children
+    if (isDef(data) && isPatchable(vnode)) {
+      //updateAttrs; updateClass; updateDOMListeners; updateDOMProps; updateStyle; update; updateDirectives;
+      for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode)
+      if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
+    }
+    if (isUndef(vnode.text)) {
+      //都包含子节点
+      if (isDef(oldCh) && isDef(ch)) {
+      //子节点不同，更新子节点
+        if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
+        //只有新的元素包含子节点，就新增这些新子节点
+      } else if (isDef(ch)) {
+        if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
+        addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
+        //如果只有老元素包含子节点，则需要移除这些子节点
+      } else if (isDef(oldCh)) {
+        removeVnodes(elm, oldCh, 0, oldCh.length - 1)
+      } else if (isDef(oldVnode.text)) {
+        nodeOps.setTextContent(elm, '')
+      }
+    } else if (oldVnode.text !== vnode.text) {
+      //更新text
+      nodeOps.setTextContent(elm, vnode.text)
+    }
+    if (isDef(data)) {
+      if (isDef(i = data.hook) && isDef(i = i.postpatch)) i(oldVnode, vnode)
+    }
+  }
+``` 
+结合updateChildren的流程图来看
+![updateChildren](http://image.jiantuku.com/17-7-26/82308669.jpg?attname=file_1501061830126_61f0.png&e=1501070410&token=el7kgPgYzpJoB23jrChWJ2gV3HpRl0VCzFn8rKKv:ORMmnZP-YN6RW5i1G7xQe68xZBg=)
+
+vue仅仅对同一层的节点尝试匹配这样的算法是一个O(n)的复杂度，n取决于节点的大小，也尝试使用key进行匹配。而修改只修改发生了变化的节点，也就是和老节点存在差异的节点，
+这又是一个O(n)的复杂度，这个n取决于存在差异的节点个数。
