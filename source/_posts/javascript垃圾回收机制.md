@@ -12,7 +12,7 @@ tags:
 
 var theThing = null;
 var replaceThing = function () {
-  var originalThing = new Array(1000000).join('*');
+  var originalThing = theThing;
   var c = 'a'
   function unused() {
     if (originalThing) {
@@ -125,10 +125,10 @@ Concurrent同样也是V8中进行内存回收的线程调度算法,当主线程�
 ```js
           from-space                                to-space                           old-space
 
-    theThing         (reachable)                theThing                             originThing(closure)
-    replaceThing     (reachable)                replaceThing
-    unused                                      originThing
-    originThing      (reachable)       =>       longStr                    =>               
+    theThing         (reachable)                theThing                             originThing -> theThing
+    replaceThing     (reachable)                replaceThing                         theThing -> longStr
+    unused                                      originThing                          theThing -> someMethod
+    originThing      (reachable)       =>       longStr                    =>        someMethod -> originThing(closure)        
     c                                           someMethod
     longStr          (reachable)                
     someMethod       (reachable)                
@@ -137,11 +137,11 @@ Concurrent同样也是V8中进行内存回收的线程调度算法,当主线程�
 
 ```js
          old-space
-    originThing(closure)
-    originThing(closure)
-    originThing(closure)
-    originThing(closure)
-    originThing(closure)
+    originThing -> theThing -> longStr & someMethod -> originThing(closure)
+    originThing -> theThing -> longStr & someMethod -> originThing(closure)
+    originThing -> theThing -> longStr & someMethod -> originThing(closure)
+    originThing -> theThing -> longStr & someMethod -> originThing(closure)
+    originThing -> theThing -> longStr & someMethod -> originThing(closure)
 ```
 
 #### 结论 
@@ -149,11 +149,13 @@ Concurrent同样也是V8中进行内存回收的线程调度算法,当主线程�
 
 ![闭包是在声明的时候被创建的](http://img.pandihai.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20190708095349.png)<center><font color=gray size=2>闭包是在声明的时候被创建的,而不是执行的时候被创建的。</font></center>
 
+然后导致在originalThing还引用着老的theThing,theThing中的someMethod引用着originalThing导致全部都reachable无法释放。
+
 ``` javacript
 
 var theThing = null;
 var replaceThing = function () {
-  var originalThing = new Array(1000000).join('*');
+  var originalThing = theThing;
   var c = 'a'
   function unused() {
     if (originalThing) {
