@@ -6,19 +6,27 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>javascript基础:prototype | 潘迪海</title>
+  <title>javascript垃圾回收机制 | 潘迪海</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="准备在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 javasctipt 中一切都是对象。 在 javascript 中主要有两种类型  Primitives — Strings, Numbers, Booleans, Undefined, and Null. Objects — Arrays, Functions, Dates">
+  <meta name="description" content="前言其实大多数的时候作为javascript开发者不需要太关心内存的使用和释放,因为所有的javascript环境都实现了各自的垃圾回收机制(garbage collector(GC)),但是随着现在的SPA越来越多也越来越大,越来越追求极致的性能渐渐也要求开发者能够适当的了解一些垃圾回收机制内部的实现原理,在性能优化和追踪内存泄漏的时候都能够起到一点帮助。看一段内存泄漏的代码1234567891">
 <meta property="og:type" content="article">
-<meta property="og:title" content="javascript基础:prototype">
-<meta property="og:url" content="http://yoursite.com/2019/04/20/javascript基础-prototype/index.html">
+<meta property="og:title" content="javascript垃圾回收机制">
+<meta property="og:url" content="http://yoursite.com/2019/07/01/javascript垃圾回收机制/index.html">
 <meta property="og:site_name" content="潘迪海">
-<meta property="og:description" content="准备在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 javasctipt 中一切都是对象。 在 javascript 中主要有两种类型  Primitives — Strings, Numbers, Booleans, Undefined, and Null. Objects — Arrays, Functions, Dates">
+<meta property="og:description" content="前言其实大多数的时候作为javascript开发者不需要太关心内存的使用和释放,因为所有的javascript环境都实现了各自的垃圾回收机制(garbage collector(GC)),但是随着现在的SPA越来越多也越来越大,越来越追求极致的性能渐渐也要求开发者能够适当的了解一些垃圾回收机制内部的实现原理,在性能优化和追踪内存泄漏的时候都能够起到一点帮助。看一段内存泄漏的代码1234567891">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="http://img.pandihai.com/03.svg">
+<meta property="og:image" content="http://img.pandihai.com/04.svg">
+<meta property="og:image" content="http://img.pandihai.com/05.svg">
+<meta property="og:image" content="http://img.pandihai.com/09.svg">
+<meta property="og:image" content="http://img.pandihai.com/10.svg">
+<meta property="og:image" content="http://img.pandihai.com/06.svg">
+<meta property="og:image" content="http://img.pandihai.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20190708095349.png">
 <meta property="og:updated_time" content="2020-02-15T05:31:39.393Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="javascript基础:prototype">
-<meta name="twitter:description" content="准备在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 javasctipt 中一切都是对象。 在 javascript 中主要有两种类型  Primitives — Strings, Numbers, Booleans, Undefined, and Null. Objects — Arrays, Functions, Dates">
+<meta name="twitter:title" content="javascript垃圾回收机制">
+<meta name="twitter:description" content="前言其实大多数的时候作为javascript开发者不需要太关心内存的使用和释放,因为所有的javascript环境都实现了各自的垃圾回收机制(garbage collector(GC)),但是随着现在的SPA越来越多也越来越大,越来越追求极致的性能渐渐也要求开发者能够适当的了解一些垃圾回收机制内部的实现原理,在性能优化和追踪内存泄漏的时候都能够起到一点帮助。看一段内存泄漏的代码1234567891">
+<meta name="twitter:image" content="http://img.pandihai.com/03.svg">
   
     <link rel="alternative" href="/atom.xml" title="潘迪海" type="application/atom+xml">
   
@@ -154,53 +162,79 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-javascript基础-prototype" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-javascript垃圾回收机制" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      javascript基础:prototype
+      javascript垃圾回收机制
     </h1>
   
 
         
-        <a href="/2019/04/20/javascript基础-prototype/" class="archive-article-date">
-  	<time datetime="2019-04-20T08:27:37.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-20</time>
+        <a href="/2019/07/01/javascript垃圾回收机制/" class="archive-article-date">
+  	<time datetime="2019-07-01T02:53:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-01</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 <strong>javasctipt 中一切都是对象。</strong> 在 javascript 中主要有两种类型</p>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>其实大多数的时候作为javascript开发者不需要太关心内存的使用和释放,因为所有的javascript环境都实现了各自的垃圾回收机制(garbage collector(GC)),但是随着现在的SPA越来越多也越来越大,越来越追求极致的性能渐渐也要求开发者能够适当的了解一些垃圾回收机制内部的实现原理,在性能优化和追踪内存泄漏的时候都能够起到一点帮助。看一段内存泄漏的代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">var theThing = null;</span><br><span class="line">var replaceThing = function () &#123;</span><br><span class="line">  var originalThing = theThing;</span><br><span class="line">  var c = &apos;a&apos;</span><br><span class="line">  function unused() &#123;</span><br><span class="line">    if (originalThing) &#123;</span><br><span class="line">      console.log(&quot;hi&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  theThing = &#123;</span><br><span class="line">    longStr: new Array(1000000).join(&apos;*&apos;),</span><br><span class="line">    someMethod: function () &#123;</span><br><span class="line">      console.log(&apos;1111&apos;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">setInterval(replaceThing,1000)</span><br></pre></td></tr></table></figure></p>
+<p>最早想要去深入了解javacript GC是看到这道找内存泄漏的题目(具体怎么内存泄漏,我们后面在分析).任何一种GC管理都需要做这几步:</p>
 <ol>
-<li>Primitives — Strings, Numbers, Booleans, Undefined, and Null.</li>
-<li>Objects — Arrays, Functions, Dates</li>
+<li>识别哪些对象需要被回收。</li>
+<li>回收/重复使用需要被回收对象的内存。</li>
+<li>压缩/整理内存(有些可能没有)</li>
 </ol>
-<p>即使看起来这些并不是所有的类型都是 Object,但是所有的非 Object 类型在 javascript 编译的时候都会被包装成一个对象,这个叫 javascript 中被称为 <strong>“包装对象(wrapper primitive into Object)”</strong>。另外你还需要知道对象是怎么被创建的。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo.prototype.fn = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> o = <span class="keyword">new</span> foo();</span><br><span class="line"></span><br><span class="line">o.fn();</span><br></pre></td></tr></table></figure>
-<p>这里new会做4件事</p>
+<p>而常见的识别对象是否需要回收的机制有下面几种:</p>
+<ul>
+<li>引用计数 (Python)</li>
+<li>逃逸分析 (Java)</li>
+<li>Tracing/Reachable 追踪分析 (javascript)</li>
+</ul>
+<p>今天就主要看一下V8中GC的具体实现方式</p>
+<h2 id="Tracing-Reachable-追踪分析"><a href="#Tracing-Reachable-追踪分析" class="headerlink" title="Tracing/Reachable 追踪分析"></a>Tracing/Reachable 追踪分析</h2><p>GC的第一步就是要找出哪些对象需要被回收,哪些不需要。在追踪分析(Tracing/Reachable)中,认为可以被追踪到(reachability)的对象认为是不能被回收的对象,剩下的不能被追踪到的对象就是要回收的对象。<br>在V8中,追踪分析会从根对象开始(GC Root)根据指针将所有被能被追踪到的对象标记为reachable,javascript中根对象包括调用堆栈和global对象。</p>
+<h2 id="The-Generational-Hypothesis"><a href="#The-Generational-Hypothesis" class="headerlink" title="The Generational Hypothesis"></a>The Generational Hypothesis</h2><p>Generational Hypothesis的意思是大部分的对象在早期就需要被回收。基于这样的一个假设,有很多的编程语言的垃圾回收机制在设计的时候都是将内存分代,年轻代(young generation),和老代(old generation)。<br>这里的代其实就是开辟两块space分别存储刚被分配的对象和经过两次GC还是没有被回收的对象。在V8中有两个垃圾回收器分别对年轻代和老代进行垃圾回收,Scavenger针对年轻代进行垃圾回收,Major GC针对老代进行垃圾回收,他们的算法也是不同的。</p>
+<h3 id="Scavenger"><a href="#Scavenger" class="headerlink" title="Scavenger"></a>Scavenger</h3><p>V8在年轻代的内存space使用的是semi-space算法,也就是说将内存分为两半,同时只有一块的内存能被使用,另外一半是完全空的(或者说这一半内存都是可以被分配的)。在程序开始执行的时候,将所有的变量都分配可以被使用的一半内存中(叫做from-space)。当第一次GC开始的时候根据追踪分析结果,将所有可以reachable的对象(不能被释放的对象),全部转移到剩余一半可以被分配的内存中(to-space)，这样from-space中的内存又全部可以被分配了，这个时候如果又有新申明的对象需要分配内存,就会分配到这一块内存当中了,最后在转移完不能被释放的对象之后,还需要更新引用指针,指向在to-space中最新的地址。</p>
+<p><img src="http://img.pandihai.com/03.svg" alt="第一次GC"><center><font color="gray" size="2">第一次GC</font></center></p>
+<p>第二次GC开始的时候,在原本的to-space中仍然不能被释放的对象首先转移到老代(old generation)的space中,这时候to-space中又全部可以被分配,重复之前的操作。从from-space中将不能被释放的对象转移过来。完成2次GC之后,存货了两次的对象现在就在老代里面了,而存活一次GC的对象现在就在to-space中了,这个to-space也被叫做intermediate generation(中生代).在Scavenger中回收内存有三个过程:标记(追踪分析),转移(from-space to to-space),更新指针地址。</p>
+<p><img src="http://img.pandihai.com/04.svg" alt="第二次GC"><center><font color="gray" size="2">第二次GC</font></center></p>
+<p>在这种内存回收的机制中,其中一个问题就是转移对象的时候是会消耗一定性能的,但是根据Generational Hypothesis的假设大部分的对象在早期就会被回收了,这也就意味着只有少部分不能被回收的对象需要被移动，这也意味着如果这个假设不成立，比如我们的代码中有很多的闭包导致很多的作用域不能被释放,那么将会有大量的对象需要在space之间转移,是比较浪费性能的。但是相反的,基于大部分对象都可以在早期被回收的假设,如果大部分的对象在早期就可以被释放,这种机制的内存回收对这需要在早期就回收的对象其实是什么都不需要做的,只需要把不能释放的少部分对象进行转移（from-space to to-space）,然后在下次分配内存的时候把这部分需要释放的对象所占的内存直接覆盖就可以了(rewrite dead object)。</p>
+<h4 id="Parallel"><a href="#Parallel" class="headerlink" title="Parallel"></a>Parallel</h4><p>Parallel是V8中调度线程进行内存回收的一种算法,指的是主线程和帮助线程同时进行相同工作量的内存回收,这种算法还是会停止主线程正在进行的全部工作,但是工作量被平摊到几个线程之后,理论上时间也被参与线程的数量整除了(加上一些同步调度的开销)。Scavenger就是使用的这种线程调度机制,当需要进行内存回收的时候,所有的线程获得一定数量的存活的对象引用指针,开始同时将这些存活对象搬运到to-space中。不同的线程可能通过不同引用路径访问到同一个对象,当线程将存活对象转移到to-space之后,更新完指针地址后,会在from-space的老对象中留下一个forwarding指针,这样其他线程找到这个对象之后就可以通过这个指针来找到新的地址更新引用地址了。</p>
+<p><img src="http://img.pandihai.com/05.svg" alt="Scavenger平行调度"><center><font color="gray" size="2">Scavenger平行调度,同时有多个帮助线程和主线程参与</font></center></p>
+<h3 id="Major-GC"><a href="#Major-GC" class="headerlink" title="Major GC"></a>Major GC</h3><p>Major GC主要负责老代的内存回收,同样也是三个过程:标记(追踪分析),清除,整理压缩内存。标记这一步和Scavenger一样通过追踪分析确定哪些内存需要被回收,然后在对象被回收以后将被回收的内存加入到free-list这个数据结构中,free-list就像是一个个抽屉,每个抽屉的大小代表了从这个地址开始可以被连续分配的内存的大小,当我们需要在老代中重新分配内存的时候就可以快速的根据需要分配内存的大小找到一个合适的抽屉把内存进行分配。最后就是进行内存整理,这个就好像是Windows系统整理磁盘一样,将还没被幸存的对象利用free-list查找拷贝到其他的已经被整理完的page中,这样使小块的内存碎片也被整理完之后加以利用。跟Scavenger中一样来回拷贝对象也会有性能的消耗,在V8中只会对高度碎片化的page进行整理,对其他的page进行清除,这样在转移的时候也是一样的只需要转移存活的对象就可以了。</p>
+<h4 id="Concurrent"><a href="#Concurrent" class="headerlink" title="Concurrent"></a>Concurrent</h4><p>Concurrent同样也是V8中进行内存回收的线程调度算法,当主线程执行Javascript的时候,帮助线程同步进行内存回收的一些工作。相比Parallel来说这个算法要复杂的多,可能前一毫秒帮助线程在进行GC操作,后一毫秒主线程就改变了这个对象。也有可能帮助线程和主线程同时读取修改同一个对象。但是这种算法的优势就是当帮助线程进行GC工作的时候,主线程可以继续执行JavaScript,完全不会受到影响。Major GC就是采用的这个算法,当老代的内存到达一定系统自动计算的阀值,就开始进行Major GC,首先每个帮助线程都会获得一定数量的对象指针,开始针对这些对象进行标记,然后根据对象的引用指针对reachable对象都进行标记,在进行这些标记的同时,主线程仍然在执行JavaScript没有受到影响。当帮助线程完成标记,或者老代触及了设定的阀值,主线程也开始参与GC,他首先进行一步快速的标记确认,确保帮助线程在标记的同时主线程修改的对象标记正确(在帮助线程进行标记的时候,如果主线程执行的JavaScript修改了对象会有Write barriers,类似于有个标记)。当主线程确认所有存活的对象都被标记以后,主线程会和几个子线程一起,对一些内存page进行压缩和更新指针的工作,不是所有的page都需要进行压缩(只对高碎片化的进行压缩),不需要压缩的利用free-list进行打扫。</p>
+<p><img src="http://img.pandihai.com/09.svg" alt="Major GC同步调度"><center><font color="gray" size="2">Major GC同步调度</font></center></p>
+<h3 id="什么时候会执行GC"><a href="#什么时候会执行GC" class="headerlink" title="什么时候会执行GC"></a>什么时候会执行GC</h3><p>在JavaScript中我们没办法用编程的方式主动触发GC,因为涉及到复杂的线程调度,主动的触发GC可能会影响正在执行的GC或者下次的GC。对于Scavenger来说,当在新生代中分配内存时,已经没有空间分配内存导致分配内存失败时,开始Scavenger垃圾回收,希望能释放一些内存,然后在尝试重新分配内存。对于老代来说,开启内存回收的时机要复杂很多,简单来说会根据老代中内存占用的百分比和需要被分配对象的百分比计算出一个合适的阀值,触及到这个阀值就会开启老代的垃圾回收。</p>
+<p>我们可以通过手动设置来设置新生代和老代的space大小:<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">node --max-old-space-size=<span class="number">1700</span> index.js</span><br><span class="line">node --max-<span class="keyword">new</span>-space-size=<span class="number">1024</span> index.js</span><br></pre></td></tr></table></figure></p>
+<h4 id="空闲时GC"><a href="#空闲时GC" class="headerlink" title="空闲时GC"></a>空闲时GC</h4><p>虽然我们通过JavaScript没办法主动触发GC,但是在V8中还有一个空闲GC的机制,他根据被嵌入宿主来决定什么时候属于空闲时来执行GC。比如V8在Chrome浏览器中,为了保证动画渲染的流畅,一秒钟需要渲染60个帧,相当于16.6毫秒渲染一帧,在16.6毫秒以内渲染完了一帧,比如只花了10毫秒就渲染完了这一帧的动画,那么你就有了6.6毫秒的空闲时间可以执行一些空闲时的GC(在许多新版本的浏览器中,开发者也可以通过<a href="https://developers.google.com/web/updates/2015/08/using-requestidlecallback" target="_blank" rel="noopener">requestIdleCallback</a>事件,利用浏览器空闲时间来提高性能,有兴趣的可以去了解<a href="https://www.youtube.com/watch?v=ZCuYPiUIONs" target="_blank" rel="noopener">React 16 fiber的实现</a>)。</p>
+<p><img src="http://img.pandihai.com/10.svg" alt="空闲时GC"><center><font color="gray" size="2">利用主线程空闲时间进行GC</font></center></p>
+<h4 id="Incremental"><a href="#Incremental" class="headerlink" title="Incremental"></a>Incremental</h4><p>那么在空闲的几毫秒时间里能完成一次GC吗?那就是接下来就要介绍另外一种调度算法Incremental了,相比较于其他调度算法在暂停一次主线程执行一整次完成的GC,Incremental要求把一整个GC中的工作拆成一小块,和主线程中的JS递进的执行,或者在主线程有空闲时间的时候执行一小块GC任务。</p>
+<p><img src="http://img.pandihai.com/06.svg" alt="Incremental"><center><font color="gray" size="2">将一整个GC切分成一小块GC任务,插入到主线程中进行</font></center></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>不同JavaScript引擎实现GC都有不同程度的差异,本文主要以V8为例,有很多地方没有非常仔细的展开,比如：其实老代里面不是只有一块space,而是有4块space组成,每块space存放着不同的数据(old space,large object space,matedata space,code space)。垃圾回收设计本身就是一个很复杂的程序,有了GC,让开发者可以完全不用担心内存的管理问题。但是适当的了解垃圾回收的原理能够帮助我们更加深入的理解JavaScript的运行环境,也可以帮助我们写出更高效率的代码。</p>
+<p>最后的最后将之前的内存泄漏代码一步步的推演:</p>
 <ol>
-<li>创建一个全新的对象。</li>
-<li>将这个全新的对象的prototype指向他创建方法的prototype属性。</li>
-<li>将这个对象绑定到this关键字传入到方法中。</li>
-<li>将对象返回。</li>
+<li>首先在全局作用域中声明了两个变量theThing和replaceThing,其中replaceThing被赋值为一个方法(callable object),然后调用setInterval方法,每隔1000毫秒调用一次replaceThing。</li>
+<li>1000毫秒到了,执行replaceThing,创建一个新的局部作用域,根据hoist,先将方法unused方法声明,然后声明了originThing和c变量。这里特别要注意,<strong>闭包是在方法声明的时候被创建的而不是在方法执行的时候创建的</strong>,所以当声明了unused方法以后,同时创建了一个闭包,里面包含了unused方法使用的局部作用域变量originThing。<strong>另外在V8中一旦作用域有闭包,这个上下文会被绑定到所有方法当中作为闭包,即使这个方法没有使用这个作用域中的任何一个变量</strong>,所以在这里给全局作用域赋值的时候,someMethod作为一个方法,也被绑定一个unused创建的闭包,且被赋值在全局作用域中的theThing上了。</li>
+<li><p>如果这时候开始第一次GC,从全局对象进行Reachable分析:theThing(reachable),replaceThing(reachable),theThing-&gt;longStr(reachable),theThing-&gt;someMethod(reachable),execution stack -&gt; setInterval -&gt; closure -&gt; originThing(reachable)。<br>所有标记完成。此时:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">      <span class="keyword">from</span>-space                                to-space</span><br><span class="line"></span><br><span class="line">theThing         (reachable)                theThing</span><br><span class="line">replaceThing     (reachable)                replaceThing</span><br><span class="line">unused                                      originThing</span><br><span class="line">originThing      (reachable)       =&gt;       longStr  </span><br><span class="line">c                                           someMethod</span><br><span class="line">longStr          (reachable)                </span><br><span class="line">someMethod       (reachable)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在过1000毫秒以后又执行replaceThing,又执行一遍步骤2</p>
+</li>
+<li>第二次GC开始</li>
 </ol>
-<h3 id="什么是-prototype"><a href="#什么是-prototype" class="headerlink" title="什么是 prototype"></a>什么是 prototype</h3><p>在你了解了对象的基本内容，并且自己创建过对象之后,其实你已经跟 prototype 打过交道了。简单来说<strong>prototype 就是对象中的一个属性,他<em>指向</em>(link to)另外的一个对象.</strong></p>
-<p>对于前面的例子,当你有一个方法foo的时候,编译器会同时创建一个对象foo,接下来我们创建了一个对象o,在对象中访问原型可以使用<code>o.__proto__</code>,这时对象o指向foo的对象。(javascript中方法访问和设置原型用属性<code>prototype</code>,对象用<code>__proto__</code>)</p>
-<h3 id="原型链-prototype-chains"><a href="#原型链-prototype-chains" class="headerlink" title="原型链(prototype chains)"></a>原型链(prototype chains)</h3><p>那么 prototype 到底有什么用呢? 在 javascript 中当你访问一个对象没有的属性时候,编译器会顺着<strong>原型链</strong>一直直到找到这个属性或者到达原型链的顶端的null,而null没有prototype。所有原型链的顶端最终都指向Object对象,而Object.prototype是null。</p>
-<h3 id="原型有什么用"><a href="#原型有什么用" class="headerlink" title="原型有什么用"></a>原型有什么用</h3><p>javascript 是一个面向对象的语言(OOP),他最早是受到 Java,Scheme 和 Self 语言的启发,但是 javascript 没有选择向 Java 一样基于 Class 来创建对象,而是选择像 Self 一样基于原型来创建对象(Self 也是最早的基于原型的编程语音)。一个面向对象的语言就有三个要素：封装(Encapsulation),继承(Inheritance),多态(Polymorphism).而 javascript 是基于原型来实现继承的(prototypal inheritance).</p>
-<p>如果你有一个 dog 类型,你可以这样来继承 animal 类型</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> animal = &#123;</span><br><span class="line">  bark: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"我是动物"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> dog = &#123;</span><br><span class="line">  __proto__: animal</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">dog.bark(); <span class="comment">//我是动物</span></span><br></pre></td></tr></table></figure>
-<p>如果把代码稍微修改一下那么就可以实现多态</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> animal = &#123;</span><br><span class="line">  bark: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"我是"</span> + <span class="keyword">this</span>.type;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> dog = &#123;</span><br><span class="line">  __proto__: animal,</span><br><span class="line">  type: <span class="string">"狗"</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> cat = &#123;</span><br><span class="line">  __proto__: animal,</span><br><span class="line">  type: <span class="string">"猫"</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">dog.bark(); <span class="comment">//我是狗</span></span><br><span class="line">cat.bark(); <span class="comment">//我是猫</span></span><br></pre></td></tr></table></figure>
-<h3 id="Class和Protptype比较"><a href="#Class和Protptype比较" class="headerlink" title="Class和Protptype比较"></a>Class和Protptype比较</h3><p>那么相比较于基于class来创建对象，基于Prototype来创建对象有什么区别呢?</p>
-<p>我觉得最大的区别就是 基于class创建的对象会<strong>拷贝</strong>class的属性,而基于prototype创建的对象会通过prototype<strong>连接(link to)</strong>他的父类(这种方式更像是对象代理).也就是说当你在运行时添加或者删除父类中的属性,当子类被访问到他自己没有的属性时,编译器会随着prototype找到父类新添加的属性。而class是类似拷贝的行为,已经创建的对象,父类发生了属性的添加或者删除,并不会影响到子类。相比较而言PBG(prototype base programming)最主要的优势是他会更灵活,更灵活就有可能会有更多的bug。而基于class编程更严格,这样的代码就会更健壮相对来说bug就会少一点。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>在javascript中,继承是依靠原型链来实现的。所有的object,array,functiond都有原型,所有的原型最终都指向Obejct,而Object.prototype指向null。当访问对象的属性的时候,如果这个属性在当前这个对象中没有找到,编译器会顺着原型链一直找这个属性,一直到找到或者到null为止。</p>
-<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><em>composition vs inheritance</em></p>
-<p><em>javascript delegation vs inheritance</em></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">      <span class="keyword">from</span>-space                                to-space                           old-space</span><br><span class="line"></span><br><span class="line">theThing         (reachable)                theThing                             originThing -&gt; theThing</span><br><span class="line">replaceThing     (reachable)                replaceThing                         theThing -&gt; longStr</span><br><span class="line">unused                                      originThing                          theThing -&gt; someMethod</span><br><span class="line">originThing      (reachable)       =&gt;       <span class="function"><span class="params">longStr</span>                    =&gt;</span>        someMethod -&gt; originThing(closure)        </span><br><span class="line">c                                           someMethod</span><br><span class="line">longStr          (reachable)                </span><br><span class="line">someMethod       (reachable)</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>因为闭包一直连着这originThing,导致了old-space中的originThing一直无法释放。随着时间的推移,每个1000毫秒执行一次replaceThing方法</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">     old-space</span><br><span class="line">originThing -&gt; theThing -&gt; longStr &amp; someMethod -&gt; originThing(closure)</span><br><span class="line">originThing -&gt; theThing -&gt; longStr &amp; someMethod -&gt; originThing(closure)</span><br><span class="line">originThing -&gt; theThing -&gt; longStr &amp; someMethod -&gt; originThing(closure)</span><br><span class="line">originThing -&gt; theThing -&gt; longStr &amp; someMethod -&gt; originThing(closure)</span><br><span class="line">originThing -&gt; theThing -&gt; longStr &amp; someMethod -&gt; originThing(closure)</span><br></pre></td></tr></table></figure>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>主要导致内存泄漏的原因是</p>
+<p><img src="http://img.pandihai.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20190708095349.png" alt="闭包是在声明的时候被创建的"><center><font color="gray" size="2">闭包是在声明的时候被创建的,而不是执行的时候被创建的。</font></center></p>
+<p>然后导致在originalThing还引用着老的theThing,theThing中的someMethod引用着originalThing导致全部都reachable无法释放。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">var theThing = null;</span><br><span class="line">var replaceThing = function () &#123;</span><br><span class="line">  var originalThing = theThing;</span><br><span class="line">  var c = &apos;a&apos;</span><br><span class="line">  function unused() &#123;</span><br><span class="line">    if (originalThing) &#123;</span><br><span class="line">      console.log(&quot;hi&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  theThing = &#123;</span><br><span class="line">    longStr: new Array(1000000).join(&apos;*&apos;),</span><br><span class="line">    someMethod: function () &#123;</span><br><span class="line">      console.log(&apos;1111&apos;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  originalThing = null;    //手动释放局部作用域中的变量</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">setInterval(replaceThing,1000)</span><br></pre></td></tr></table></figure>
 
       
 
@@ -259,7 +293,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2019/04/20/javascript基础-prototype/" alt="微信分享二维码">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2019/07/01/javascript垃圾回收机制/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -273,18 +307,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/07/01/javascript垃圾回收机制/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          javascript垃圾回收机制
-        
-      </div>
-    </a>
   
-  
-    <a href="/2018/01/12/react-fiber源码学习1/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">react-fiber源码学习1</div>
+    <a href="/2019/04/20/javascript基础-prototype/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">javascript基础:prototype</div>
       <i class="icon-circle-right"></i>
     </a>
   

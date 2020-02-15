@@ -6,19 +6,15 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>javascript基础:prototype | 潘迪海</title>
+  <title>Archives: 2019/7 | 潘迪海</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="准备在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 javasctipt 中一切都是对象。 在 javascript 中主要有两种类型  Primitives — Strings, Numbers, Booleans, Undefined, and Null. Objects — Arrays, Functions, Dates">
-<meta property="og:type" content="article">
-<meta property="og:title" content="javascript基础:prototype">
-<meta property="og:url" content="http://yoursite.com/2019/04/20/javascript基础-prototype/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="潘迪海">
+<meta property="og:url" content="http://yoursite.com/archives/2019/07/index.html">
 <meta property="og:site_name" content="潘迪海">
-<meta property="og:description" content="准备在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 javasctipt 中一切都是对象。 在 javascript 中主要有两种类型  Primitives — Strings, Numbers, Booleans, Undefined, and Null. Objects — Arrays, Functions, Dates">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-02-15T05:31:39.393Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="javascript基础:prototype">
-<meta name="twitter:description" content="准备在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 javasctipt 中一切都是对象。 在 javascript 中主要有两种类型  Primitives — Strings, Numbers, Booleans, Undefined, and Null. Objects — Arrays, Functions, Dates">
+<meta name="twitter:title" content="潘迪海">
   
     <link rel="alternative" href="/atom.xml" title="潘迪海" type="application/atom+xml">
   
@@ -154,168 +150,49 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-javascript基础-prototype" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      javascript基础:prototype
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2019" class="archive-year">2019</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2019/07/01/javascript垃圾回收机制/" class="archive-article-date">
+  	<time datetime="2019-07-01T02:53:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-01</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2019/07/01/javascript垃圾回收机制/">javascript垃圾回收机制</a>
     </h1>
   
 
-        
-        <a href="/2019/04/20/javascript基础-prototype/" class="archive-article-date">
-  	<time datetime="2019-04-20T08:27:37.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-20</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>在  了解 prototype 之前，你需要了解 javascript 中  的对象。你也许听过这样一句话 <strong>javasctipt 中一切都是对象。</strong> 在 javascript 中主要有两种类型</p>
-<ol>
-<li>Primitives — Strings, Numbers, Booleans, Undefined, and Null.</li>
-<li>Objects — Arrays, Functions, Dates</li>
-</ol>
-<p>即使看起来这些并不是所有的类型都是 Object,但是所有的非 Object 类型在 javascript 编译的时候都会被包装成一个对象,这个叫 javascript 中被称为 <strong>“包装对象(wrapper primitive into Object)”</strong>。另外你还需要知道对象是怎么被创建的。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo.prototype.fn = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> o = <span class="keyword">new</span> foo();</span><br><span class="line"></span><br><span class="line">o.fn();</span><br></pre></td></tr></table></figure>
-<p>这里new会做4件事</p>
-<ol>
-<li>创建一个全新的对象。</li>
-<li>将这个全新的对象的prototype指向他创建方法的prototype属性。</li>
-<li>将这个对象绑定到this关键字传入到方法中。</li>
-<li>将对象返回。</li>
-</ol>
-<h3 id="什么是-prototype"><a href="#什么是-prototype" class="headerlink" title="什么是 prototype"></a>什么是 prototype</h3><p>在你了解了对象的基本内容，并且自己创建过对象之后,其实你已经跟 prototype 打过交道了。简单来说<strong>prototype 就是对象中的一个属性,他<em>指向</em>(link to)另外的一个对象.</strong></p>
-<p>对于前面的例子,当你有一个方法foo的时候,编译器会同时创建一个对象foo,接下来我们创建了一个对象o,在对象中访问原型可以使用<code>o.__proto__</code>,这时对象o指向foo的对象。(javascript中方法访问和设置原型用属性<code>prototype</code>,对象用<code>__proto__</code>)</p>
-<h3 id="原型链-prototype-chains"><a href="#原型链-prototype-chains" class="headerlink" title="原型链(prototype chains)"></a>原型链(prototype chains)</h3><p>那么 prototype 到底有什么用呢? 在 javascript 中当你访问一个对象没有的属性时候,编译器会顺着<strong>原型链</strong>一直直到找到这个属性或者到达原型链的顶端的null,而null没有prototype。所有原型链的顶端最终都指向Object对象,而Object.prototype是null。</p>
-<h3 id="原型有什么用"><a href="#原型有什么用" class="headerlink" title="原型有什么用"></a>原型有什么用</h3><p>javascript 是一个面向对象的语言(OOP),他最早是受到 Java,Scheme 和 Self 语言的启发,但是 javascript 没有选择向 Java 一样基于 Class 来创建对象,而是选择像 Self 一样基于原型来创建对象(Self 也是最早的基于原型的编程语音)。一个面向对象的语言就有三个要素：封装(Encapsulation),继承(Inheritance),多态(Polymorphism).而 javascript 是基于原型来实现继承的(prototypal inheritance).</p>
-<p>如果你有一个 dog 类型,你可以这样来继承 animal 类型</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> animal = &#123;</span><br><span class="line">  bark: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"我是动物"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> dog = &#123;</span><br><span class="line">  __proto__: animal</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">dog.bark(); <span class="comment">//我是动物</span></span><br></pre></td></tr></table></figure>
-<p>如果把代码稍微修改一下那么就可以实现多态</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> animal = &#123;</span><br><span class="line">  bark: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"我是"</span> + <span class="keyword">this</span>.type;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> dog = &#123;</span><br><span class="line">  __proto__: animal,</span><br><span class="line">  type: <span class="string">"狗"</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> cat = &#123;</span><br><span class="line">  __proto__: animal,</span><br><span class="line">  type: <span class="string">"猫"</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">dog.bark(); <span class="comment">//我是狗</span></span><br><span class="line">cat.bark(); <span class="comment">//我是猫</span></span><br></pre></td></tr></table></figure>
-<h3 id="Class和Protptype比较"><a href="#Class和Protptype比较" class="headerlink" title="Class和Protptype比较"></a>Class和Protptype比较</h3><p>那么相比较于基于class来创建对象，基于Prototype来创建对象有什么区别呢?</p>
-<p>我觉得最大的区别就是 基于class创建的对象会<strong>拷贝</strong>class的属性,而基于prototype创建的对象会通过prototype<strong>连接(link to)</strong>他的父类(这种方式更像是对象代理).也就是说当你在运行时添加或者删除父类中的属性,当子类被访问到他自己没有的属性时,编译器会随着prototype找到父类新添加的属性。而class是类似拷贝的行为,已经创建的对象,父类发生了属性的添加或者删除,并不会影响到子类。相比较而言PBG(prototype base programming)最主要的优势是他会更灵活,更灵活就有可能会有更多的bug。而基于class编程更严格,这样的代码就会更健壮相对来说bug就会少一点。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>在javascript中,继承是依靠原型链来实现的。所有的object,array,functiond都有原型,所有的原型最终都指向Obejct,而Object.prototype指向null。当访问对象的属性的时候,如果这个属性在当前这个对象中没有找到,编译器会顺着原型链一直找这个属性,一直到找到或者到null为止。</p>
-<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><em>composition vs inheritance</em></p>
-<p><em>javascript delegation vs inheritance</em></p>
+        <div class="article-info info-on-right">
+          
+          
 
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2019/04/20/javascript基础-prototype/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
-  
-    <a href="/2019/07/01/javascript垃圾回收机制/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          javascript垃圾回收机制
-        
-      </div>
-    </a>
   
   
-    <a href="/2018/01/12/react-fiber源码学习1/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">react-fiber源码学习1</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-
-  
+    
 
 
           </div>
@@ -338,8 +215,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
